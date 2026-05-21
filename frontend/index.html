@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SID — Space Intelligence Dashboard | Live NASA Telemetry</title>
+  <meta name="description" content="Real-time Space Intelligence Dashboard powered by NASA APIs and LLaMA 3. Monitor solar flares, near-earth objects, and geomagnetic storms with an AI assistant." />
+  <meta name="keywords" content="NASA, Space Weather, Solar Flares, Asteroids, NEO, Geomagnetic Storm, AI, Space Intelligence, LLaMA" />
+  <meta name="author" content="Space Intelligence Dashboard" />
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="SID — Space Intelligence Dashboard" />
+  <meta property="og:description" content="Real-time planetary threat assessment, solar flux registry, and orbital radar powered by NASA telemetry and Groq AI." />
+  <meta property="og:image" content="https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1200&auto=format&fit=crop" />
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image" />
+  <meta property="twitter:title" content="SID — Space Intelligence Dashboard" />
+  <meta property="twitter:description" content="Real-time planetary threat assessment, solar flux registry, and orbital radar powered by NASA telemetry and Groq AI." />
+  <meta property="twitter:image" content="https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1200&auto=format&fit=crop" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="style.css?v=6" />
+  
+  <!-- Modern Minimal SVG Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2322d3ee' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='10'/><circle cx='12' cy='12' r='4'/><line x1='12' y1='2' x2='12' y2='6'/><line x1='12' y1='18' x2='12' y2='22'/><line x1='2' y1='12' x2='6' y2='12'/><line x1='18' y1='12' x2='22' y2='12'/></svg>" />
+</head>
+<body>
+
+<!-- LOADER -->
+<div id="loader">
+  <div class="ld-inner">
+    <svg class="ld-ring" viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="none" stroke="rgba(255,255,255,.04)" stroke-width="2"/><circle cx="20" cy="20" r="16" fill="none" stroke="#22d3ee" stroke-width="2" stroke-dasharray="30 70" stroke-linecap="round"><animateTransform attributeName="transform" type="rotate" dur="1s" from="0 20 20" to="360 20 20" repeatCount="indefinite"/></circle></svg>
+    <p class="ld-text">INITIALIZING<span class="ld-dots">...</span></p>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<aside id="sidebar">
+  <div class="sb-logo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg>
+    <span>SID</span>
+  </div>
+
+  <nav class="sb-nav">
+    <a href="#" class="sb-link active" data-page="overview" id="nav-overview">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      <span>Overview</span>
+    </a>
+    <a href="#" class="sb-link" data-page="monitor" id="nav-monitor">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      <span>Monitor</span>
+    </a>
+    <a href="#" class="sb-link" data-page="map" id="nav-map">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      <span>Impact Map</span>
+    </a>
+    <a href="#" class="sb-link" data-page="aria" id="nav-aria">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+      <span>ARIA AI</span>
+    </a>
+  </nav>
+
+  <div class="sb-status">
+    <div class="sb-dot" id="sb-dot"></div>
+    <span class="sb-status-lbl" id="sb-status-lbl">LIVE</span>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main id="main">
+
+  <!-- ▓▓ PAGE: OVERVIEW ▓▓ -->
+  <section class="page active" id="page-overview">
+
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="tb-left">
+        <div class="live-badge"><div class="live-dot" id="live-dot"></div><span>LIVE</span></div>
+        <span class="tb-sep">·</span>
+        <span class="tb-time" id="current-time">—</span>
+      </div>
+      <div class="tb-right">
+        <button class="tb-btn" id="refresh-btn" title="Refresh">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        </button>
+        <button class="tb-btn" id="logs-btn" title="Technical Logs">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Hero: Threat Score -->
+    <div class="hero-section">
+      <div class="hero-left">
+        <p class="hero-eyebrow" id="hero-eyebrow">PLANETARY THREAT INDEX</p>
+        <div class="hero-score-wrap">
+          <span class="hero-score" id="hero-score">—</span>
+          <span class="hero-unit">/ 100</span>
+        </div>
+        <p class="hero-desc" id="hero-desc">Connecting to NASA telemetry...</p>
+        <div class="hero-tags" id="hero-tags"></div>
+      </div>
+      <div class="hero-right">
+        <canvas id="space-3d-canvas"></canvas>
+        <div class="gauge-wrap">
+          <svg class="gauge-svg" id="gauge-svg" viewBox="0 0 200 120">
+            <path d="M20 100 A80 80 0 0 1 180 100" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="8" stroke-linecap="round"/>
+            <path id="gauge-arc" d="M20 100 A80 80 0 0 1 180 100" fill="none" stroke="#22d3ee" stroke-width="8" stroke-linecap="round" stroke-dasharray="251.2" stroke-dashoffset="251.2" style="transition:stroke-dashoffset 1.2s ease,stroke .6s ease"/>
+            <text id="gauge-label" x="100" y="90" text-anchor="middle" font-family="Inter" font-size="28" font-weight="700" fill="#f1f5f9">—</text>
+            <text x="100" y="112" text-anchor="middle" font-family="Inter" font-size="10" fill="#475569">THREAT SCORE</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3 Metric Cards -->
+    <div class="metrics-row">
+
+      <div class="metric-card" id="mc-solar">
+        <div class="mc-header">
+          <div class="mc-icon solar-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          </div>
+          <div>
+            <p class="mc-label">Solar Flares</p>
+            <p class="mc-sublabel">Last 30 days</p>
+          </div>
+          <span class="mc-badge" id="solar-badge">—</span>
+        </div>
+        <div class="mc-number" id="solar-count">—</div>
+        <canvas class="mc-sparkline" id="spark-solar"></canvas>
+        <div class="mc-footer"><span id="solar-class">Max class: —</span><span id="solar-trend">—</span></div>
+      </div>
+
+      <div class="metric-card" id="mc-neo">
+        <div class="mc-header">
+          <div class="mc-icon neo-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="22" y1="12" x2="18" y2="12"/><line x1="6" y1="12" x2="2" y2="12"/><line x1="12" y1="6" x2="12" y2="2"/><line x1="12" y1="22" x2="12" y2="18"/></svg>
+          </div>
+          <div>
+            <p class="mc-label">Near-Earth Objects</p>
+            <p class="mc-sublabel">This week</p>
+          </div>
+          <span class="mc-badge" id="neo-badge">—</span>
+        </div>
+        <div class="mc-number" id="neo-count">—</div>
+        <div class="mc-progress-wrap">
+          <div class="mc-progress-bar"><div class="mc-progress-fill" id="neo-progress"></div></div>
+          <span class="mc-progress-label" id="neo-haz-label">— hazardous</span>
+        </div>
+        <div class="mc-footer"><span id="neo-closest">Closest: —</span><span id="neo-dist">—</span></div>
+      </div>
+
+      <div class="metric-card" id="mc-storm">
+        <div class="mc-header">
+          <div class="mc-icon storm-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </div>
+          <div>
+            <p class="mc-label">Geomagnetic Storms</p>
+            <p class="mc-sublabel">Current activity</p>
+          </div>
+          <span class="mc-badge" id="storm-badge">—</span>
+        </div>
+        <div class="mc-status-word" id="storm-word">—</div>
+        <div class="mc-footer" style="margin-top:auto"><span id="storm-count">— events (7d)</span><span id="storm-cme">CMEs: —</span></div>
+      </div>
+
+    </div>
+
+    <!-- Bottom ticker -->
+    <div class="bottom-bar">
+      <div class="bb-left">
+        <span class="bb-label">ARIA.BROADCAST</span>
+        <span class="bb-ticker" id="aria-ticker">Calibrating sensors...</span>
+      </div>
+      <button class="bb-logs-btn" id="open-logs-drawer">View Technical Logs ↗</button>
+    </div>
+
+  </section>
+
+  <!-- ▓▓ PAGE: MONITOR ▓▓ -->
+  <section class="page" id="page-monitor">
+    <div class="inner-page">
+      <div class="ip-header">
+        <h2>Space Weather Monitor</h2>
+        <p>30-day solar flux registry and live orbital radar sweep</p>
+      </div>
+      <div class="monitor-grid">
+        <div class="glass-card span2">
+          <div class="gc-header">
+            <div class="gc-title-group">
+              <span class="gc-tag">SOLAR FLUX</span>
+              <h3>Flare Activity — 30 Days</h3>
+            </div>
+            <div class="gc-stats">
+              <div class="gs"><span class="gs-val" id="m-flare-count">—</span><span class="gs-lbl">Total</span></div>
+              <div class="gs"><span class="gs-val" id="m-max-class">—</span><span class="gs-lbl">Max Class</span></div>
+              <div class="gs"><span class="gs-val" id="m-trend">—</span><span class="gs-lbl">Trend</span></div>
+            </div>
+          </div>
+          <div class="chart-area"><canvas id="solarChartClean"></canvas></div>
+        </div>
+        <div class="glass-card">
+          <div class="gc-header">
+            <div class="gc-title-group">
+              <span class="gc-tag">ORBITAL RADAR</span>
+              <h3>Near-Earth Objects</h3>
+            </div>
+          </div>
+          <div class="radar-area"><canvas id="radar-canvas"></canvas></div>
+          <div class="radar-legend">
+            <span class="rl-item"><span class="rl-dot danger"></span>Hazardous</span>
+            <span class="rl-item"><span class="rl-dot safe"></span>Safe</span>
+            <span class="rl-count" id="radar-total-count">—</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ▓▓ PAGE: MAP ▓▓ -->
+  <section class="page" id="page-map">
+    <div class="inner-page">
+      <div class="ip-header">
+        <h2>Geospatial Impact Correlation</h2>
+        <p>Atmospheric interference and aurora visibility zones</p>
+      </div>
+      <div class="map-layout">
+        <div id="map"></div>
+        <div class="map-panel">
+          <div class="mp-block">
+            <p class="mp-title">ACTIVE ZONES</p>
+            <div class="mp-item"><span class="mp-dot red"></span>High Risk</div>
+            <div class="mp-item"><span class="mp-dot yellow"></span>Medium Risk</div>
+            <div class="mp-item"><span class="mp-dot green"></span>Low Risk</div>
+            <div class="mp-item"><span class="mp-dot blue"></span>Aurora Zone</div>
+          </div>
+          <div class="mp-block">
+            <p class="mp-title">STATUS</p>
+            <div class="mp-stat"><span>Active Zones</span><strong id="map-zone-count">—</strong></div>
+            <div class="mp-stat"><span>Peak Risk</span><strong id="map-risk-level">—</strong></div>
+          </div>
+          <div id="map-legend"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ▓▓ PAGE: ARIA ▓▓ -->
+  <section class="page" id="page-aria">
+    <div class="inner-page">
+      <div class="ip-header">
+        <h2>ARIA Intelligence Engine</h2>
+        <p>Natural language queries powered by LLaMA 3.3 — ask anything about current space conditions</p>
+      </div>
+      <div class="aria-layout">
+        <div class="glass-card aria-report-card" id="ai-report-card">
+          <div class="gc-header">
+            <div class="gc-title-group">
+              <span class="gc-tag">THREAT ASSESSMENT</span>
+              <h3>Planetary Status Report</h3>
+            </div>
+            <div class="report-lvl" id="report-lvl">LOADING</div>
+          </div>
+          <div id="ai-report-content">
+            <div class="sk-wrap"><div class="sk"></div><div class="sk short"></div><div class="sk"></div><div class="sk short"></div></div>
+          </div>
+        </div>
+        <div class="glass-card chat-card">
+          <div class="gc-header">
+            <div class="gc-title-group">
+              <span class="gc-tag">ARIA ASSISTANT</span>
+              <h3>Ask About Space Conditions</h3>
+            </div>
+            <div class="aria-status"><div class="as-dot"></div>ONLINE</div>
+          </div>
+          <div class="chat-msgs" id="chat-messages">
+            <div class="msg bot"><div class="msg-av bot-av"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg></div><div class="msg-body"><div class="msg-name">ARIA</div><div class="msg-txt">Link established. Ask me about solar flux, asteroid trajectories, or geomagnetic storms.</div></div></div>
+          </div>
+          <div class="chat-chips">
+            <button class="chip" onclick="askARIA('Is Earth safe today?')">🌍 Earth safe today?</button>
+            <button class="chip" onclick="askARIA('What is the closest asteroid?')">☄️ Closest asteroid?</button>
+            <button class="chip" onclick="askARIA('How dangerous are solar flares now?')">☀️ Solar danger?</button>
+            <button class="chip" onclick="askARIA('Will there be aurora tonight?')">🌌 Aurora tonight?</button>
+          </div>
+          <div class="chat-input-row">
+            <input id="chat-input" type="text" placeholder="Ask ARIA anything..." maxlength="500" autocomplete="off" />
+            <button id="chat-send">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- LOGS DRAWER -->
+<div class="drawer-overlay" id="drawer-overlay"></div>
+<div class="logs-drawer" id="logs-drawer">
+  <div class="drawer-header">
+    <span>TECHNICAL LOG FEED</span>
+    <button class="drawer-close" id="drawer-close">✕</button>
+  </div>
+  <div class="drawer-body" id="terminal-log-body">
+    <div class="term-row dim">[SID] System ready. Awaiting telemetry...</div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="js/api.js?v=5"></script>
+<script src="js/charts.js?v=5"></script>
+<script src="js/map.js?v=5"></script>
+<script src="js/app.js?v=5"></script>
+</body>
+</html>
